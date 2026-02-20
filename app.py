@@ -1,3 +1,5 @@
 import streamlit as st
-st.title("HemoScan AI - Anemia Detection")
-st.write("Setup complete! Ready for Day 1 modules.")
+
+st.title("🚀 HemoScan AI - Anemia Detection")
+st.success("✅ Hackathon Day 1 - Clean Setup!")
+st.balloons()

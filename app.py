@@ -1,6 +1,8 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
+from PIL import ImageDraw
+
 # import cv2
 import time
 import cnn_model  # Your ML model
@@ -41,9 +43,22 @@ with tab1:
             camera_image = st.camera_input("📷 Flash ON - Hold steady...")
             
             if camera_image:
-                st.session_state.scan_mode = None  # Hide camera after capture
+                st.session_state.scan_mode = None
                 image = Image.open(camera_image)
-                st.image(image, caption="✅ LIVE SCAN CAPTURED", use_column_width=True)
+                
+                # AUTO-ADAPTIVE LOWER EYELID CIRCLE
+                width, height = image.size
+                center_x = width // 2      # Image center horizontally
+                center_y = int(height * 0.75)  # 75% down (lower eyelid zone)
+                radius = min(width, height) // 8
+
+                draw = ImageDraw.Draw(image)
+                draw.ellipse([
+                    center_x - radius, center_y - radius, 
+                    center_x + radius, center_y + radius
+                ], outline="lime", width=8)
+                st.image(image, caption="✅ AI analyzing lower eyelid conjunctiva", use_column_width=True)
+
                 
                 # Analysis
                 progress = st.progress(0)
@@ -69,7 +84,21 @@ with tab1:
             
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, caption="✅ PHOTO UPLOADED", use_column_width=True)
+                
+                # AUTO-ADAPTIVE LOWER EYELID CIRCLE
+                width, height = image.size
+                center_x = width // 2      # Image center horizontally
+                center_y = int(height * 0.75)  # 75% down (lower eyelid zone)
+                radius = min(width, height) // 8
+
+                draw = ImageDraw.Draw(image)
+                draw.ellipse([
+                    center_x - radius, center_y - radius, 
+                    center_x + radius, center_y + radius
+                ], outline="lime", width=8)
+                st.image(image, caption="✅ AI analyzing lower eyelid conjunctiva", use_column_width=True)
+
+
                 
                 progress = st.progress(0)
                 for i in range(100):

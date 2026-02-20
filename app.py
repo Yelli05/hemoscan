@@ -4,6 +4,12 @@ from PIL import Image
 import cv2
 import time
 import cnn_model  # Your ML model
+if 'live_scan' not in st.session_state:
+    st.session_state.live_scan = False
+if 'hb_result' not in st.session_state:
+    st.session_state.hb_result = None
+if 'scan_mode' not in st.session_state:
+    st.session_state.scan_mode = None
 
 st.set_page_config(page_title="HemoScan AI", layout="wide", page_icon="🩺")
 
@@ -13,37 +19,74 @@ st.markdown("***Non-invasive Anemia Detection & Risk Analysis***")
 tab1, tab2 = st.tabs(["📸 **Photo Scan**", "📋 **Risk Test**"])
 
 with tab1:
-    st.subheader("👁️ **Step 1: Capture Inner Eyelid (Flash ON)**")
+    st.subheader("👁️ **Step 1: Live Conjunctiva Scan**")
     
     def predict_hb(image):
         return cnn_model.predict_with_ml(image)
     
     col1, col2 = st.columns([1,3])
     with col1:
-        st.info("📱 **Instructions:**\n• Turn flash ON\n• Open lower eyelid\n• Take close-up photo")
+        st.info("📱 **Live Camera Instructions:**\n• Turn FLASH ON\n• Open lower eyelid\n• Hold steady 2 seconds")
+        if st.button("🎥 **START LIVE SCAN**", use_container_width=True, type="primary"):
+            st.session_state.live_scan = True
+    
     with col2:
-        # FIXED: Removed conflicting key parameter
-        uploaded_file = st.file_uploader("Upload photo...", type=['png','jpg','jpeg'])
+        # BUTTON CONTROLLED CAMERA (NEW!)
+        if st.button("📸 **START LIVE SCAN**", use_container_width=True, type="primary"):
+            st.session_state.scan_mode = "live"
+            st.rerun()  # Refresh to show camera
         
-        if uploaded_file is not None:
-            image = Image.open(uploaded_file)
-            st.image(image, caption="Your Photo", use_column_width=True)
+        if st.session_state.get('scan_mode') == "live":
+            st.markdown("### 🎥 **Camera Active - Take Photo**")
+            camera_image = st.camera_input("📷 Flash ON - Hold steady...")
             
-            progress = st.progress(0)
-            for i in range(100):
-                time.sleep(0.01)
-                progress.progress(i + 1)
+            if camera_image:
+                st.session_state.scan_mode = None  # Hide camera after capture
+                image = Image.open(camera_image)
+                st.image(image, caption="✅ LIVE SCAN CAPTURED", use_column_width=True)
+                
+                # Analysis
+                progress = st.progress(0)
+                for i in range(100):
+                    time.sleep(0.01)
+                    progress.progress(i + 1)
+                
+                hb, rgb = predict_hb(image)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Hemoglobin", f"{hb:.1f} g/dL")
+                with col2:
+                    status = "🟡 ANEMIC" if hb < 12 else "🟢 NORMAL"
+                    st.metric("Status", status)
+                with col3:
+                    st.metric("Redness", f"{rgb[0]}")
+        
+        else:
+            # File upload fallback
+            st.markdown("### 📎 **OR Upload Saved Photo**")
+            uploaded_file = st.file_uploader("Choose photo...", type=['png','jpg','jpeg'])
             
-            hb, rgb = predict_hb(image)
-            
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Hemoglobin", f"{hb:.1f} g/dL")
-            with col2:
-                status = "🟡 ANEMIC" if hb < 12 else "🟢 NORMAL"
-                st.metric("Status", status)
-            with col3:
-                st.metric("Redness", f"{rgb[0]}")
+            if uploaded_file is not None:
+                image = Image.open(uploaded_file)
+                st.image(image, caption="✅ PHOTO UPLOADED", use_column_width=True)
+                
+                progress = st.progress(0)
+                for i in range(100):
+                    time.sleep(0.01)
+                    progress.progress(i + 1)
+                
+                hb, rgb = predict_hb(image)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Hemoglobin", f"{hb:.1f} g/dL")
+                with col2:
+                    status = "🟡 ANEMIC" if hb < 12 else "🟢 NORMAL"
+                    st.metric("Status", status)
+                with col3:
+                    st.metric("Redness", f"{rgb[0]}")
+
 
 with tab2:
     st.subheader("📊 **Step 2: Complete Risk Assessment**")

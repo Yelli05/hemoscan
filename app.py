@@ -3,6 +3,7 @@ import numpy as np
 from PIL import Image
 import cv2
 import time
+import cnn_model  # Your ML model
 
 st.set_page_config(page_title="HemoScan AI", layout="wide", page_icon="🩺")
 
@@ -15,21 +16,16 @@ with tab1:
     st.subheader("👁️ **Step 1: Capture Inner Eyelid (Flash ON)**")
     
     def predict_hb(image):
-        img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-        h, w = img_cv.shape[:2]
-        center = img_cv[h//4:3*h//4, w//4:3*w//4]
-        mean_rgb = np.mean(center, axis=(0,1))[::-1]
-        r, g, b = mean_rgb
-        hb = 8.5 + (r - 140) * 0.08 + (g - 130) * 0.07
-        return round(hb, 1), mean_rgb
+        return cnn_model.predict_with_ml(image)
     
     col1, col2 = st.columns([1,3])
     with col1:
         st.info("📱 **Instructions:**\n• Turn flash ON\n• Open lower eyelid\n• Take close-up photo")
     with col2:
+        # FIXED: Removed conflicting key parameter
         uploaded_file = st.file_uploader("Upload photo...", type=['png','jpg','jpeg'])
         
-        if uploaded_file:
+        if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption="Your Photo", use_column_width=True)
             
@@ -47,7 +43,7 @@ with tab1:
                 status = "🟡 ANEMIC" if hb < 12 else "🟢 NORMAL"
                 st.metric("Status", status)
             with col3:
-                st.metric("Redness", f"{rgb[0]:.0f}")
+                st.metric("Redness", f"{rgb[0]}")
 
 with tab2:
     st.subheader("📊 **Step 2: Complete Risk Assessment**")
@@ -94,4 +90,4 @@ with tab2:
             st.balloons()
 
 st.markdown("---")
-st.markdown("*College Hackathon 2026 | Conjunctiva color analysis*")
+st.markdown("*College Hackathon 2026 | Neural Network + Conjunctiva Analysis*")

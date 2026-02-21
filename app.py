@@ -36,7 +36,7 @@ with st.sidebar:
     • Neural Network trained on clinical RGB data
     """)
     st.markdown("---")
-    st.markdown("*🏆 SIH 2026 | Bapatla Engineering College*")
+    st.markdown("* Bapatla Engineering College*")
 
 
 with tab1:

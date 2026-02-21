@@ -36,7 +36,7 @@ with st.sidebar:
     • Neural Network trained on clinical RGB data
     """)
     st.markdown("---")
-    st.markdown("* Bapatla Engineering College*")
+    st.markdown("*Bapatla Engineering College*")
 
 
 with tab1:
@@ -48,8 +48,6 @@ with tab1:
     col1, col2 = st.columns([1,3])
     with col1:
         st.info("📱 **Live Camera Instructions:**\n• Turn FLASH ON\n• Open lower eyelid\n• Hold steady 2 seconds")
-        if st.button("🎥 **START LIVE SCAN**", use_container_width=True, type="primary"):
-            st.session_state.live_scan = True
     
     with col2:
         # BUTTON CONTROLLED CAMERA (NEW!)
